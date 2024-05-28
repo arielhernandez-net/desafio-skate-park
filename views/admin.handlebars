@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <h1>Skate Park - Administración</h1>
+
+    <div class="py-4">
+        <h2>Usuarios</h2>
+        <hr class="w-50">
+
+        <table id="usuarios-table" class="table w-100 m-auto">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Años de experiencia</th>
+                    <th scope="col">Especialidad</th>
+                    <th scope="col">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each usuarios}}
+                <tr>
+                    <th scope="row">{{@index}}</th>
+                    <td>{{nombre}}</td>
+                    <td>{{email}}</td>
+                    <td>{{anos_experiencia}}</td>
+                    <td>{{especialidad}}</td>
+                    <td>
+                        <input type="checkbox" id="estado-{{id}}" {{#if estado}}checked{{/if}} />
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', async () => {
+                    const userId = checkbox.id.split('-')[1];
+                    const estado = checkbox.checked;
+
+                    try {
+                        const response = await fetch(`/admin/actualizar/${userId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({ estado })
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`Error al actualizar el estado del usuario: ${errorText}`);
+                        }
+
+                        const updateData = await response.json();
+                        console.log('Estado actualizado:', updateData);
+                        alert('Estado del usuario actualizado correctamente');
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert(`Error al actualizar el estado del usuario: ${error.message}`);
+                        checkbox.checked = !estado;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
